@@ -89,20 +89,24 @@ app.get('/calculate', (req, res, next) => {
 
         // Realiza a operação baseada no parâmetro 'operation'
         switch (decodedOperation) {
-            case '+':
+            case 'add':
                 result = number1 + number2;
                 break;
-            case '-':
+            case 'subtract':
                 result = number1 - number2;
                 break;
-            case 'x':
+            case 'multiply':
                 result = number1 * number2;
                 break;
-            case '/':
+            case 'divide':
                 if (number2 === 0) {
                     throw new Error('Divisão por zero não é permitida!');
                 }
                 result = number1 / number2;
+                break
+            case 'par':
+                result = `${number1} é ${number1 % 2 === 0 ? "par" : "impar"} e ${number2} é ${number2 % 2 === 0 ? "par" : "impar"}`;
+  
                 break;
             default:
                 throw new Error('Operação inválida!');
@@ -113,6 +117,57 @@ app.get('/calculate', (req, res, next) => {
         next(error); // Passa o erro para o middleware de tratamento
     }
 });
+
+app.get('/imc', (req, res, next) => {
+    try {
+        const { altura, peso} = req.query;
+
+ 
+
+        // Verifica se todos os parâmetros estão presentes
+        if (altura === undefined || peso === undefined) {
+            throw new Error('Parâmetros insuficientes!');
+        }
+
+        // Converte os parâmetros para números
+        const altnum = parseFloat(altura)/100;
+        const pesnum = parseFloat(peso);
+
+        // Verifica se os parâmetros são números válidos
+        if (isNaN(altnum) || isNaN(pesnum)) {
+            throw new Error('Parâmetros inválidos!');
+        }
+
+        
+        let imc1;
+        imc1= pesnum/(altnum * altnum);
+
+        let result;
+        if (imc1 < 16.9) {
+            result = `${imc1.toFixed(2)}: Muito abaixo do peso.`;
+        } else if (imc1 >= 17 && imc1 <= 18.4) {
+            result = `${imc1.toFixed(2)}: Abaixo do peso.`;
+        } else if (imc1 >= 18.5 && imc1 <= 24.9) {
+            result = `${imc1.toFixed(2)}: Peso normal.`;
+        } else if (imc1 >= 25 && imc1 <= 29.9) {
+            result = `${imc1.toFixed(2)}: Acima do peso.`;
+        } else if (imc1 >= 30 && imc1 <= 34.9) {
+            result = `${imc1.toFixed(2)}: Obesidade grau I.`;
+        } else if (imc1 >= 35 && imc1 <= 40) {
+            result = `${imc1.toFixed(2)}: Obesidade grau II.`;
+        } else {
+            result = `${imc1.toFixed(2)}: Obesidade grau III.`;
+        }
+
+        res.json({ result });
+    } catch (error) {
+        next(error); // Passa o erro para o middleware de tratamento
+    }
+});
+
+
+
+
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
